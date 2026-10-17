@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Brand · Nokka Games</title>
+  <meta name="description" content="Nokka Games logo, app icons, favicons and colors, ready to download.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="canonical" href="https://nokka.games/brand/">
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="preload" href="/fonts/geist-variable.woff2" as="font" type="font/woff2" crossorigin>
+  <style>
+    @font-face {
+      font-family: "Geist";
+      src: url("/fonts/geist-variable.woff2") format("woff2");
+      font-weight: 100 900;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    :root {
+      --bg: #f6f5f2;
+      --fg: #141414;
+      --muted: #6b6b6b;
+      --line: #d8d6d0;
+      --tile: #ecebe7;
+      --accent: #e4572e;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #121212;
+        --fg: #ededeb;
+        --muted: #8e8e8a;
+        --line: #2e2e2c;
+        --tile: #1b1b1a;
+        --accent: #ff6a3d;
+      }
+    }
+
+    * { box-sizing: border-box; margin: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .wrap {
+      max-width: 56rem;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 4rem;
+      display: flex;
+      flex-direction: column;
+      gap: 4rem;
+    }
+
+    a { color: inherit; }
+
+    .back {
+      align-self: flex-start;
+      font-size: 0.9rem;
+      color: var(--muted);
+      text-decoration: none;
+    }
+    .back:hover, .back:focus-visible { color: var(--fg); }
+
+    header { display: flex; flex-direction: column; gap: 1rem; }
+
+    h1 {
+      font-size: clamp(2.5rem, 9vw, 4.5rem);
+      font-weight: 600;
+      letter-spacing: -0.045em;
+      line-height: 1;
+    }
+
+    .lede { max-width: 34rem; font-size: clamp(1.05rem, 3vw, 1.2rem); color: var(--muted); }
+
+    .zip {
+      align-self: flex-start;
+      margin-top: 0.75rem;
+      font-size: 1rem;
+      text-decoration: none;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 2px;
+      transition: border-color 0.3s ease;
+    }
+    .zip:hover, .zip:focus-visible { border-color: var(--accent); }
+
+    section { display: flex; flex-direction: column; gap: 1.25rem; }
+
+    h2 {
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .note { max-width: 36rem; color: var(--muted); font-size: 0.95rem; }
+
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+
+    figure { display: flex; flex-direction: column; gap: 0.75rem; min-width: 0; }
+
+    .tile {
+      display: grid;
+      place-items: center;
+      aspect-ratio: 4 / 3;
+      border-radius: 12px;
+      padding: 12%;
+    }
+    .tile img { width: 100%; height: 100%; object-fit: contain; }
+    .tile.paper { background: #f6f5f2; box-shadow: inset 0 0 0 1px var(--line); }
+    .tile.ink { background: #141414; box-shadow: inset 0 0 0 1px var(--line); }
+    .tile.plain { background: var(--tile); }
+    .tile.mark img { width: 46%; }
+
+    figcaption { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; align-items: baseline; font-size: 0.9rem; }
+    figcaption b { font-weight: 500; margin-right: auto; }
+
+    .dl { display: flex; flex-wrap: wrap; gap: 0.25rem 0.85rem; }
+    .dl a {
+      color: var(--muted);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      font-variant-numeric: tabular-nums;
+    }
+    .dl a:hover, .dl a:focus-visible { color: var(--fg); border-color: var(--accent); }
+
+    .icons { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 1.5rem; }
+    .icons .item { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--muted); }
+    .icons .app { width: 96px; height: 96px; border-radius: 22%; box-shadow: 0 0 0 1px var(--line); }
+    .icons .fav { width: 32px; height: 32px; }
+    .icons .fav.s16 { width: 16px; height: 16px; }
+
+    .table { display: flex; flex-direction: column; }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem 1rem;
+      align-items: baseline;
+      padding: 0.6rem 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 0.95rem;
+    }
+    .row b { font-weight: 500; min-width: 11rem; }
+
+    .swatches { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+    .swatch { display: flex; flex-direction: column; gap: 0.6rem; }
+    .chip { height: 6rem; border-radius: 12px; box-shadow: inset 0 0 0 1px var(--line); }
+    .swatch .meta { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; font-size: 0.9rem; }
+    .swatch b { font-weight: 500; }
+    .copy {
+      font: inherit;
+      font-variant-numeric: tabular-nums;
+      color: var(--muted);
+      background: none;
+      border: 0;
+      padding: 0;
+      cursor: pointer;
+      border-bottom: 1px solid transparent;
+    }
+    .copy:hover, .copy:focus-visible { color: var(--fg); border-color: var(--accent); }
+
+    ul.rules { padding-left: 1.1rem; color: var(--muted); display: flex; flex-direction: column; gap: 0.4rem; max-width: 40rem; }
+    ul.rules strong { color: var(--fg); font-weight: 500; }
+
+    footer { display: flex; justify-content: space-between; gap: 1rem; font-size: 0.85rem; color: var(--muted); }
+
+    a:focus-visible, button:focus-visible { outline: 2px solid var(--fg); outline-offset: 4px; }
+
+    ::selection { background: var(--accent); color: #fff; }
+
+    @media (max-width: 640px) {
+      .grid { grid-template-columns: 1fr; }
+      .swatches { grid-template-columns: 1fr; }
+      .chip { height: 4rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back" href="/">&larr; Nokka Games</a>
+
+    <header>
+      <h1>Brand</h1>
+      <p class="lede">The Nokka Games mark, lockups, icons and colors. <em>Nokka</em> is Finnish for beak: the N is two interlocking hooks whose diagonals taper into beaks.</p>
+      <a class="zip" href="nokka-brand.zip" download>Download everything (.zip)</a>
+    </header>
+
+    <section aria-labelledby="mark">
+      <h2 id="mark">Mark</h2>
+      <div class="grid">
+        <figure>
+          <div class="tile paper mark"><img src="svg/nokka-mark.svg" alt="Nokka Games mark, dark"></div>
+          <figcaption>
+            <b>Dark</b>
+            <span class="dl">
+              <a href="svg/nokka-mark.svg" download>SVG</a>
+              <a href="png/nokka-mark-2048.png" download>PNG 2048</a>
+              <a href="png/nokka-mark-1024.png" download>1024</a>
+              <a href="png/nokka-mark-512.png" download>512</a>
+              <a href="png/nokka-mark-256.png" download>256</a>
+            </span>
+          </figcaption>
+        </figure>
+        <figure>
+          <div class="tile ink mark"><img src="svg/nokka-mark-white.svg" alt="Nokka Games mark, white"></div>
+          <figcaption>
+            <b>White</b>
+            <span class="dl">
+              <a href="svg/nokka-mark-white.svg" download>SVG</a>
+              <a href="png/nokka-mark-white-2048.png" download>PNG 2048</a>
+              <a href="png/nokka-mark-white-1024.png" download>1024</a>
+              <a href="png/nokka-mark-white-512.png" download>512</a>
+              <a href="png/nokka-mark-white-256.png" download>256</a>
+            </span>
+          </figcaption>
+        </figure>
+      </div>
+      <p class="note">For the web, <a href="svg/nokka-mark-currentcolor.svg" download>nokka-mark-currentcolor.svg</a> takes its color from the surrounding text.</p>
+    </section>
+
+    <section aria-labelledby="lockup">
+      <h2 id="lockup">Lockup</h2>
+      <div class="grid">
+        <figure>
+          <div class="tile paper"><img src="svg/nokka-lockup.svg" alt="Nokka Games horizontal lockup"></div>
+          <figcaption>
+            <b>Horizontal</b>
+            <span class="dl">
+              <a href="svg/nokka-lockup.svg" download>SVG</a>
+              <a href="png/nokka-lockup-2400.png" download>PNG 2400</a>
+              <a href="png/nokka-lockup-1200.png" download>1200</a>
+              <a href="png/nokka-lockup-600.png" download>600</a>
+            </span>
+          </figcaption>
+        </figure>
+        <figure>
+          <div class="tile ink"><img src="svg/nokka-lockup-white.svg" alt="Nokka Games horizontal lockup, white"></div>
+          <figcaption>
+            <b>Horizontal, white</b>
+            <span class="dl">
+              <a href="svg/nokka-lockup-white.svg" download>SVG</a>
+              <a href="png/nokka-lockup-white-2400.png" download>PNG 2400</a>
+              <a href="png/nokka-lockup-white-1200.png" download>1200</a>
+              <a href="png/nokka-lockup-white-600.png" download>600</a>
+            </span>
+          </figcaption>
+        </figure>
+        <figure>
+          <div class="tile paper"><img src="svg/nokka-lockup-stacked.svg" alt="Nokka Games stacked lockup"></div>
+          <figcaption>
+            <b>Stacked</b>
+            <span class="dl">
+              <a href="svg/nokka-lockup-stacked.svg" download>SVG</a>
+              <a href="png/nokka-lockup-stacked-2400.png" download>PNG 2400</a>
+              <a href="png/nokka-lockup-stacked-1200.png" download>1200</a>
+              <a href="png/nokka-lockup-stacked-600.png" download>600</a>
+            </span>
+          </figcaption>
+        </figure>
+        <figure>
+          <div class="tile ink"><img src="svg/nokka-lockup-stacked-white.svg" alt="Nokka Games stacked lockup, white"></div>
+          <figcaption>
+            <b>Stacked, white</b>
+            <span class="dl">
+              <a href="svg/nokka-lockup-stacked-white.svg" download>SVG</a>
+              <a href="png/nokka-lockup-stacked-white-2400.png" download>PNG 2400</a>
+              <a href="png/nokka-lockup-stacked-white-1200.png" download>1200</a>
+              <a href="png/nokka-lockup-stacked-white-600.png" download>600</a>
+            </span>
+          </figcaption>
+        </figure>
+      </div>
+      <p class="note">Lettering is Geist Medium, converted to outlines, so the files need no fonts installed.</p>
+    </section>
+
+    <section aria-labelledby="icons">
+      <h2 id="icons">App icon and favicon</h2>
+      <div class="icons">
+        <div class="item"><img class="app" src="svg/nokka-app-icon-dark.svg" alt="App icon, dark">Dark</div>
+        <div class="item"><img class="app" src="svg/nokka-app-icon-light.svg" alt="App icon, light">Light</div>
+        <div class="item"><img class="fav" src="png/favicon-32.png" alt="Favicon at 32px">32px</div>
+        <div class="item"><img class="fav s16" src="png/favicon-16.png" alt="Favicon at 16px">16px</div>
+      </div>
+      <div class="table">
+        <div class="row"><b>App icon, dark</b><span class="dl"><a href="svg/nokka-app-icon-dark.svg" download>SVG</a><a href="png/nokka-app-icon-dark-1024.png" download>PNG 1024</a><a href="png/nokka-app-icon-dark-512.png" download>512</a><a href="png/nokka-app-icon-dark-192.png" download>192</a></span></div>
+        <div class="row"><b>App icon, light</b><span class="dl"><a href="svg/nokka-app-icon-light.svg" download>SVG</a><a href="png/nokka-app-icon-light-1024.png" download>PNG 1024</a><a href="png/nokka-app-icon-light-512.png" download>512</a><a href="png/nokka-app-icon-light-192.png" download>192</a></span></div>
+        <div class="row"><b>Apple touch icon</b><span class="dl"><a href="png/apple-touch-icon-180.png" download>PNG 180</a></span></div>
+        <div class="row"><b>Favicon</b><span class="dl"><a href="favicon.ico" download>ICO</a><a href="svg/favicon.svg" download>SVG</a><a href="png/favicon-48.png" download>PNG 48</a><a href="png/favicon-32.png" download>32</a><a href="png/favicon-16.png" download>16</a></span></div>
+      </div>
+    </section>
+
+    <section aria-labelledby="color">
+      <h2 id="color">Color</h2>
+      <div class="swatches">
+        <div class="swatch">
+          <div class="chip" style="background:#141414"></div>
+          <div class="meta"><b>Ink</b><button class="copy" type="button" data-hex="#141414">#141414</button></div>
+        </div>
+        <div class="swatch">
+          <div class="chip" style="background:#f6f5f2"></div>
+          <div class="meta"><b>Paper</b><button class="copy" type="button" data-hex="#F6F5F2">#F6F5F2</button></div>
+        </div>
+        <div class="swatch">
+          <div class="chip" style="background:#e4572e"></div>
+          <div class="meta"><b>Accent</b><button class="copy" type="button" data-hex="#E4572E">#E4572E</button></div>
+        </div>
+      </div>
+      <p class="note">The mark is always one color: Ink, Paper or white. Accent is for small highlights such as links and selections, never for the mark.</p>
+    </section>
+
+    <section aria-labelledby="usage">
+      <h2 id="usage">Usage</h2>
+      <ul class="rules">
+        <li><strong>Clear space:</strong> keep at least one stem width empty on every side of the mark.</li>
+        <li><strong>Minimum size:</strong> 16px for the mark, 120px wide for the horizontal lockup.</li>
+        <li><strong>Keep it as drawn:</strong> don't stretch, rotate, outline, add effects or rebuild it from a font.</li>
+      </ul>
+    </section>
+
+    <footer>
+      <span>&copy; <span id="year">2026</span> Nokka Games</span>
+      <a href="mailto:hello@nokka.games">hello@nokka.games</a>
+    </footer>
+  </div>
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+    document.querySelectorAll(".copy").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const hex = btn.dataset.hex;
+        try {
+          await navigator.clipboard.writeText(hex);
+          btn.textContent = "Copied";
+        } catch (e) {
+          const r = document.createRange();
+          r.selectNodeContents(btn);
+          getSelection().removeAllRanges();
+          getSelection().addRange(r);
+          return;
+        }
+        setTimeout(() => (btn.textContent = hex), 1400);
+      });
+    });
+  </script>
+</body>
+</html>
