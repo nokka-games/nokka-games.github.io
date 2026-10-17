@@ -1,6 +1,7 @@
 // A small flock of paper birds ("nokka" = beak) drifting behind the page.
-// Boids: separation, alignment, cohesion. The cursor gently draws them in;
-// a click or tap scatters them.
+// Boids: separation, alignment, cohesion, plus a slow wandering goal and a
+// soft keep-out around the headline. The cursor gently draws them in; a click
+// or tap scatters them.
 import * as THREE from "three";
 
 const canvas = document.getElementById("sky");
@@ -12,31 +13,42 @@ const SETTINGS = {
   perception: 7,
   separation: 2.6,
   wSeparation: 26,
-  wAlignment: 2.2,
+  wAlignment: 2.4,
   wCohesion: 0.9,
-  minSpeed: 7,
-  maxSpeed: 15,
+  wWander: 0.35,
+  minSpeed: 6.5,
+  maxSpeed: 14,
   edgePush: 3,
+  keepOut: 9,
   attractRadius: 26,
   attract: 14,
   scatterRadius: 32,
   scatter: 260,
-  depth: 10,
-  scale: 0.8,
+  depth: 22,
+  front: 6,
+  scale: 0.85,
+  cameraZ: 70,
+  parallax: 4,
 };
 
 const cssVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
 function birdGeometry() {
   // Forward is +Z (Object3D.lookAt points +Z at the target).
-  const nose = [0, 0, 1.3];
-  const tail = [0, 0.05, -0.9];
-  const keel = [0, -0.32, -0.1];
-  const left = [-1.25, 0.05, -0.45];
-  const right = [1.25, 0.05, -0.45];
+  // Each wing folds once: the inner panel lifts a little, the tip a lot.
+  const nose = [0, 0, 1.35];
+  const tail = [0, 0.04, -1.0];
+  const keel = [0, -0.3, -0.05];
+  const elbowL = [-0.72, 0.08, -0.12];
+  const tipL = [-1.55, 0.12, -0.72];
+  const elbowR = [0.72, 0.08, -0.12];
+  const tipR = [1.55, 0.12, -0.72];
+  const weight = new Map([[elbowL, 0.45], [elbowR, 0.45], [tipL, 1], [tipR, 1]]);
   const tris = [
-    [nose, left, tail],
-    [nose, tail, right],
+    [nose, elbowL, tail],
+    [elbowL, tipL, tail],
+    [nose, tail, elbowR],
+    [elbowR, tail, tipR],
     [nose, keel, tail],
   ];
   const positions = [];
@@ -44,7 +56,7 @@ function birdGeometry() {
   for (const tri of tris) {
     for (const v of tri) {
       positions.push(...v);
-      wing.push(v === left || v === right ? 1 : 0);
+      wing.push(weight.get(v) ?? 0);
     }
   }
   const g = new THREE.BufferGeometry();
@@ -57,20 +69,24 @@ function birdGeometry() {
 function start() {
   let renderer;
   try {
-    renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "high-performance" });
   } catch {
     canvas.remove();
     return;
   }
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 
+  const S = SETTINGS;
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(45, 1, 1, 400);
-  camera.position.z = 70;
+  // Birds live between z = -depth and z = +front; the far ones fade into the page.
+  scene.fog = new THREE.Fog(0xffffff, S.cameraZ - S.front - 4, S.cameraZ + S.depth * 2);
+  const camera = new THREE.PerspectiveCamera(42, 1, 1, 400);
+  camera.position.z = S.cameraZ;
 
-  scene.add(new THREE.AmbientLight(0xffffff, 2.1));
-  const sun = new THREE.DirectionalLight(0xffffff, 1.6);
-  sun.position.set(-3, 6, 5);
+  const hemi = new THREE.HemisphereLight(0xffffff, 0xb8b0a4, 2.2);
+  scene.add(hemi);
+  const sun = new THREE.DirectionalLight(0xfff4e6, 1.5);
+  sun.position.set(-4, 7, 5);
   scene.add(sun);
 
   const count = innerWidth < 700 ? 70 : 140;
@@ -78,9 +94,10 @@ function start() {
   const phase = new Float32Array(count);
   for (let i = 0; i < count; i++) phase[i] = Math.random() * Math.PI * 2;
   const phaseAttr = new THREE.InstancedBufferAttribute(phase, 1);
+  phaseAttr.setUsage(THREE.DynamicDrawUsage);
   geometry.setAttribute("aPhase", phaseAttr);
 
-  const uniforms = { uFlap: { value: 0.55 } };
+  const uniforms = { uFlap: { value: 0.6 } };
   const material = new THREE.MeshLambertMaterial({ side: THREE.DoubleSide, flatShading: true });
   material.onBeforeCompile = (shader) => {
     shader.uniforms.uFlap = uniforms.uFlap;
@@ -88,7 +105,8 @@ function start() {
       .replace("#include <common>", "attribute float aWing;\nattribute float aPhase;\nuniform float uFlap;\n#include <common>")
       .replace(
         "#include <begin_vertex>",
-        "#include <begin_vertex>\ntransformed.y += sin(aPhase) * uFlap * aWing;\ntransformed.x *= 1.0 - 0.18 * aWing * abs(sin(aPhase));"
+        // The tip trails the elbow slightly, which reads as a soft wing wave.
+        "#include <begin_vertex>\nfloat s = sin(aPhase - aWing * 0.9);\ntransformed.y += s * uFlap * aWing;\ntransformed.x *= 1.0 - 0.16 * aWing * abs(s);"
       );
   };
 
@@ -98,53 +116,83 @@ function start() {
   scene.add(mesh);
 
   const accentEvery = 17;
-  const applyColors = () => {
+  const shade = Array.from({ length: count }, () => (Math.random() - 0.5) * 0.06);
+  const applyTheme = () => {
     const base = new THREE.Color(cssVar("--bird"));
     const accent = new THREE.Color(cssVar("--accent"));
     const c = new THREE.Color();
     for (let i = 0; i < count; i++) {
       if (i % accentEvery === 0) c.copy(accent);
-      else c.copy(base).offsetHSL(0, 0, (Math.random() - 0.5) * 0.06);
+      else c.copy(base).offsetHSL(0, 0, shade[i]);
       mesh.setColorAt(i, c);
     }
     mesh.instanceColor.needsUpdate = true;
+    scene.fog.color.set(cssVar("--bg"));
   };
-  applyColors();
+  applyTheme();
 
+  // World-space extents of the view at z = 0, and the headline's keep-out box.
   const bounds = new THREE.Vector3();
+  const halfView = new THREE.Vector2();
+  const keepOut = new THREE.Box2();
+  const textEls = [...document.querySelectorAll("main h1, main .tagline, main .mail")];
+  const measureText = () => {
+    keepOut.makeEmpty();
+    for (const el of textEls) {
+      const r = el.getBoundingClientRect();
+      keepOut.expandByPoint(new THREE.Vector2(
+        (r.left / innerWidth) * 2 * halfView.x - halfView.x,
+        halfView.y - (r.top / innerHeight) * 2 * halfView.y
+      ));
+      keepOut.expandByPoint(new THREE.Vector2(
+        (r.right / innerWidth) * 2 * halfView.x - halfView.x,
+        halfView.y - (r.bottom / innerHeight) * 2 * halfView.y
+      ));
+    }
+    if (!keepOut.isEmpty()) keepOut.expandByScalar(1.5);
+  };
   const resize = () => {
     const w = innerWidth;
     const h = innerHeight;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
-    const halfH = camera.position.z * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
-    bounds.set(halfH * camera.aspect * 0.92, halfH * 0.88, SETTINGS.depth);
+    halfView.y = S.cameraZ * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+    halfView.x = halfView.y * camera.aspect;
+    bounds.set(halfView.x * 0.95, halfView.y * 0.9, 0);
+    measureText();
   };
   resize();
+  // The headline animates in and webfonts swap; measure again once settled.
+  document.fonts?.ready.then(measureText);
+  setTimeout(measureText, 1800);
 
   const pos = [];
   const vel = [];
+  const heading = new Float32Array(count);
+  const bank = new Float32Array(count);
   for (let i = 0; i < count; i++) {
     pos.push(new THREE.Vector3(
       THREE.MathUtils.randFloatSpread(bounds.x * 2),
       THREE.MathUtils.randFloatSpread(bounds.y * 2),
-      THREE.MathUtils.randFloatSpread(bounds.z * 2)
+      THREE.MathUtils.randFloat(-S.depth, S.front)
     ));
     const a = Math.random() * Math.PI * 2;
-    vel.push(new THREE.Vector3(Math.cos(a), Math.sin(a) * 0.4, Math.random() - 0.5).setLength(SETTINGS.minSpeed + 2));
+    vel.push(new THREE.Vector3(Math.cos(a), Math.sin(a) * 0.4, Math.random() - 0.5).setLength(S.minSpeed + 2));
+    heading[i] = Math.atan2(vel[i].x, vel[i].z);
   }
 
-  const pointer = { world: new THREE.Vector3(), active: false };
+  const pointer = { world: new THREE.Vector3(), ndc: new THREE.Vector2(), active: false };
   const scatter = { at: new THREE.Vector3(), t: 0 };
-  const ndc = new THREE.Vector3();
+  const ray = new THREE.Vector3();
   const toWorld = (e, out) => {
-    ndc.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1, 0.5).unproject(camera);
-    ndc.sub(camera.position).normalize();
-    return out.copy(camera.position).addScaledVector(ndc, -camera.position.z / ndc.z);
+    ray.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1, 0.5).unproject(camera);
+    ray.sub(camera.position).normalize();
+    return out.copy(camera.position).addScaledVector(ray, -camera.position.z / ray.z);
   };
   addEventListener("pointermove", (e) => {
     toWorld(e, pointer.world);
+    pointer.ndc.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
     pointer.active = e.pointerType === "mouse";
   });
   addEventListener("pointerdown", (e) => {
@@ -159,11 +207,16 @@ function start() {
   const coh = new THREE.Vector3();
   const acc = new THREE.Vector3();
   const tmp = new THREE.Vector3();
+  const goal = new THREE.Vector3();
   const dummy = new THREE.Object3D();
-  dummy.scale.setScalar(SETTINGS.scale);
-  const S = SETTINGS;
+  dummy.scale.setScalar(S.scale);
+  let time = Math.random() * 100;
 
   const step = (dt) => {
+    time += dt;
+    // A slow Lissajous goal gives the flock somewhere to go.
+    goal.set(Math.sin(time * 0.07) * bounds.x * 0.75, Math.sin(time * 0.11 + 1.3) * bounds.y * 0.7, -S.depth * 0.4 + Math.sin(time * 0.05) * S.depth * 0.3);
+
     for (let i = 0; i < count; i++) {
       const p = pos[i];
       const v = vel[i];
@@ -187,14 +240,22 @@ function start() {
         acc.addScaledVector(ali.divideScalar(n).sub(v), S.wAlignment * 0.5);
         acc.addScaledVector(coh.divideScalar(n).sub(p), S.wCohesion);
       }
+      acc.addScaledVector(tmp.subVectors(goal, p), S.wWander * 0.1);
 
       // Soft walls.
       if (p.x > bounds.x) acc.x -= (p.x - bounds.x) * S.edgePush;
       if (p.x < -bounds.x) acc.x -= (p.x + bounds.x) * S.edgePush;
       if (p.y > bounds.y) acc.y -= (p.y - bounds.y) * S.edgePush;
       if (p.y < -bounds.y) acc.y -= (p.y + bounds.y) * S.edgePush;
-      if (p.z > bounds.z) acc.z -= (p.z - bounds.z) * S.edgePush;
-      if (p.z < -bounds.z) acc.z -= (p.z + bounds.z) * S.edgePush;
+      if (p.z > S.front) acc.z -= (p.z - S.front) * S.edgePush * 2;
+      if (p.z < -S.depth) acc.z -= (p.z + S.depth) * S.edgePush;
+
+      // Keep the headline clear: nudge toward the nearest vertical edge of its box.
+      if (!keepOut.isEmpty() && p.x > keepOut.min.x && p.x < keepOut.max.x && p.y > keepOut.min.y && p.y < keepOut.max.y) {
+        const up = keepOut.max.y - p.y;
+        const down = p.y - keepOut.min.y;
+        acc.y += up < down ? S.keepOut : -S.keepOut;
+      }
 
       if (pointer.active) {
         tmp.subVectors(pointer.world, p);
@@ -214,8 +275,17 @@ function start() {
       else if (speed < S.minSpeed) v.multiplyScalar(S.minSpeed / Math.max(speed, 0.001));
       p.addScaledVector(v, dt);
 
-      // Flap faster when pushing hard, glide when cruising.
-      phase[i] += dt * (7 + Math.min(acc.length(), 40) * 0.35);
+      // Bank into turns.
+      const h = Math.atan2(v.x, v.z);
+      let dh = h - heading[i];
+      if (dh > Math.PI) dh -= Math.PI * 2;
+      if (dh < -Math.PI) dh += Math.PI * 2;
+      heading[i] = h;
+      const targetBank = THREE.MathUtils.clamp(-(dh / Math.max(dt, 1e-4)) * 0.35, -0.9, 0.9);
+      bank[i] += (targetBank - bank[i]) * (1 - Math.exp(-dt * 5));
+
+      // Flap faster when working hard, glide when cruising.
+      phase[i] += dt * (6 + Math.min(acc.length(), 40) * 0.3);
     }
     scatter.t = Math.max(0, scatter.t - dt * 1.6);
   };
@@ -224,6 +294,7 @@ function start() {
     for (let i = 0; i < count; i++) {
       dummy.position.copy(pos[i]);
       dummy.lookAt(tmp.copy(pos[i]).add(vel[i]));
+      dummy.rotateZ(bank[i]);
       dummy.updateMatrix();
       mesh.setMatrixAt(i, dummy.matrix);
     }
@@ -231,12 +302,21 @@ function start() {
     phaseAttr.needsUpdate = true;
   };
 
+  const moveCamera = (dt) => {
+    const k = 1 - Math.exp(-dt * 2);
+    const tx = pointer.active ? pointer.ndc.x * S.parallax : 0;
+    const ty = pointer.active ? pointer.ndc.y * S.parallax * 0.6 : 0;
+    camera.position.x += (tx - camera.position.x) * k;
+    camera.position.y += (ty - camera.position.y) * k;
+    camera.lookAt(0, 0, 0);
+  };
+
   const show = () => requestAnimationFrame(() => canvas.classList.add("on"));
 
-  darkQuery.addEventListener("change", applyColors);
+  darkQuery.addEventListener("change", applyTheme);
 
   // Let the flock form before the first frame.
-  for (let k = 0; k < 240; k++) step(1 / 60);
+  for (let k = 0; k < 300; k++) step(1 / 60);
 
   if (reduceMotion) {
     sync();
@@ -250,11 +330,13 @@ function start() {
   }
 
   addEventListener("resize", resize);
-  if (hint) hint.textContent = matchMedia("(hover: hover)").matches ? "click to scatter" : "tap to scatter";
+  if (hint) hint.textContent = matchMedia("(hover: hover)").matches ? "Click to scatter" : "Tap to scatter";
 
   const clock = new THREE.Clock();
   renderer.setAnimationLoop(() => {
-    step(Math.min(clock.getDelta(), 1 / 30));
+    const dt = Math.min(clock.getDelta(), 1 / 30);
+    step(dt);
+    moveCamera(dt);
     sync();
     renderer.render(scene, camera);
   });

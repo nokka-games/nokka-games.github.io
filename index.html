@@ -4,27 +4,47 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Nokka Games</title>
-  <meta name="description" content="Nokka Games is an independent game studio. Small games, made with care.">
+  <meta name="description" content="Nokka Games is a game studio. Small games, made with care.">
   <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f4f2ed" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0d0d0f" media="(prefers-color-scheme: dark)">
   <meta property="og:title" content="Nokka Games">
   <meta property="og:description" content="Small games, made with care.">
   <meta property="og:url" content="https://nokka.games/">
   <meta property="og:type" content="website">
   <link rel="canonical" href="https://nokka.games/">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="fonts/instrument-serif-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/instrument-serif-400-italic.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/inter-variable.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <canvas id="sky" aria-hidden="true"></canvas>
+  <div class="grain" aria-hidden="true"></div>
+
+  <header class="top reveal" style="--i: 0">
+    <span class="mark">N</span>
+    <span class="label">Game studio</span>
+  </header>
+
   <main>
-    <h1>Nokka Games</h1>
-    <p class="tagline">Small games, made with care.</p>
-    <a class="mail" href="mailto:hello@nokka.games">hello@nokka.games</a>
+    <h1 aria-label="Nokka Games">
+      <span class="line"><span class="word" style="--i: 1">Nokka</span></span>
+      <span class="line"><span class="word" style="--i: 2"><em>Games</em></span></span>
+    </h1>
+    <p class="tagline reveal" style="--i: 4">Small games, made with care.</p>
+    <a class="mail reveal" style="--i: 5" href="mailto:hello@nokka.games">
+      <span>hello@nokka.games</span>
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 12 12 4M6 4h6v6"/></svg>
+    </a>
   </main>
-  <footer>
+
+  <footer class="reveal" style="--i: 6">
     <span>&copy; <span id="year">2026</span> Nokka Games</span>
     <span id="hint"></span>
   </footer>
+
   <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
   <script type="importmap">
     { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js" } }
