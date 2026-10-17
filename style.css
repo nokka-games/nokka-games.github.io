@@ -1,0 +1,77 @@
+:root {
+  --bg: #f6f5f2;
+  --fg: #141414;
+  --muted: #6b6b6b;
+  --line: #d8d6d0;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121212;
+    --fg: #ededeb;
+    --muted: #8e8e8a;
+    --line: #2e2e2c;
+  }
+}
+
+* { box-sizing: border-box; margin: 0; }
+
+html, body { height: 100%; }
+
+body {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+
+h1 {
+  font-size: clamp(2.5rem, 9vw, 4.5rem);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1;
+}
+
+.tagline {
+  margin-top: 1rem;
+  font-size: clamp(1.05rem, 3vw, 1.25rem);
+  color: var(--muted);
+}
+
+.mail {
+  align-self: flex-start;
+  margin-top: 2.5rem;
+  font-size: 1.05rem;
+  color: var(--fg);
+  text-decoration: none;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 2px;
+  transition: border-color 0.15s;
+}
+
+.mail:hover,
+.mail:focus-visible { border-color: var(--fg); }
+
+.mail:focus-visible { outline: 2px solid var(--fg); outline-offset: 4px; }
+
+footer {
+  width: 100%;
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 1.5rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
