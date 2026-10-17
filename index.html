@@ -15,12 +15,20 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <canvas id="sky" aria-hidden="true"></canvas>
   <main>
     <h1>Nokka Games</h1>
     <p class="tagline">Small games, made with care.</p>
     <a class="mail" href="mailto:hello@nokka.games">hello@nokka.games</a>
   </main>
-  <footer>&copy; <span id="year">2026</span> Nokka Games</footer>
+  <footer>
+    <span>&copy; <span id="year">2026</span> Nokka Games</span>
+    <span id="hint"></span>
+  </footer>
   <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+  <script type="importmap">
+    { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js" } }
+  </script>
+  <script type="module" src="flock.js"></script>
 </body>
 </html>
