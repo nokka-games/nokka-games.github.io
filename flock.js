@@ -330,7 +330,7 @@ function start() {
   }
 
   addEventListener("resize", resize);
-  if (hint) hint.textContent = matchMedia("(hover: hover)").matches ? "Click to scatter" : "Tap to scatter";
+  if (hint) hint.textContent = matchMedia("(hover: hover)").matches ? "click to scatter" : "tap to scatter";
 
   const clock = new THREE.Clock();
   renderer.setAnimationLoop(() => {
