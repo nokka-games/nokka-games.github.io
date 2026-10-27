@@ -708,6 +708,11 @@ h1 {
   .studio-mark svg { width: 18%; }
 }
 
+@media (max-width: 760px) {
+  /* Copy sits low so the flock has the top half to draw the mark in. */
+  .hero-inner { justify-content: flex-end; padding-bottom: 2rem; }
+}
+
 @media (max-width: 640px) {
   .top nav a:not(:last-child) { display: none; }
   .brand-lockup { height: 1.7rem; }
