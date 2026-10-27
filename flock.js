@@ -1,10 +1,11 @@
-// A small flock of paper birds ("nokka" = beak) drifting behind the page.
+// A small flock of paper birds ("nokka" = beak) drifting behind the hero.
 // Boids: separation, alignment, cohesion, plus a slow wandering goal and a
-// soft keep-out around the headline. The cursor gently draws them in; a click
+// soft keep-out around the intro copy. The cursor gently draws them in; a click
 // or tap scatters them.
 import * as THREE from "three";
 
 const canvas = document.getElementById("sky");
+const hero = canvas.closest(".hero") ?? document.body;
 const hint = document.getElementById("hint");
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const darkQuery = matchMedia("(prefers-color-scheme: dark)");
@@ -135,25 +136,28 @@ function start() {
   const bounds = new THREE.Vector3();
   const halfView = new THREE.Vector2();
   const keepOut = new THREE.Box2();
-  const textEls = [...document.querySelectorAll("main h1, main .tagline, main .mail")];
+  // The big headline can take a bird or two behind it; the smaller copy stays clear.
+  const textEls = [...hero.querySelectorAll(".lede, .actions")];
   const measureText = () => {
     keepOut.makeEmpty();
+    const c = canvas.getBoundingClientRect();
+    if (!c.width || !c.height) return;
     for (const el of textEls) {
       const r = el.getBoundingClientRect();
       keepOut.expandByPoint(new THREE.Vector2(
-        (r.left / innerWidth) * 2 * halfView.x - halfView.x,
-        halfView.y - (r.top / innerHeight) * 2 * halfView.y
+        ((r.left - c.left) / c.width) * 2 * halfView.x - halfView.x,
+        halfView.y - ((r.top - c.top) / c.height) * 2 * halfView.y
       ));
       keepOut.expandByPoint(new THREE.Vector2(
-        (r.right / innerWidth) * 2 * halfView.x - halfView.x,
-        halfView.y - (r.bottom / innerHeight) * 2 * halfView.y
+        ((r.right - c.left) / c.width) * 2 * halfView.x - halfView.x,
+        halfView.y - ((r.bottom - c.top) / c.height) * 2 * halfView.y
       ));
     }
     if (!keepOut.isEmpty()) keepOut.expandByScalar(1.5);
   };
   const resize = () => {
-    const w = innerWidth;
-    const h = innerHeight;
+    const w = canvas.clientWidth || innerWidth;
+    const h = canvas.clientHeight || innerHeight;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
@@ -185,17 +189,23 @@ function start() {
   const pointer = { world: new THREE.Vector3(), ndc: new THREE.Vector2(), active: false };
   const scatter = { at: new THREE.Vector3(), t: 0 };
   const ray = new THREE.Vector3();
+  const toNdc = (e, out) => {
+    const c = canvas.getBoundingClientRect();
+    return out.set(((e.clientX - c.left) / c.width) * 2 - 1, -((e.clientY - c.top) / c.height) * 2 + 1);
+  };
+  const ndc = new THREE.Vector2();
   const toWorld = (e, out) => {
-    ray.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1, 0.5).unproject(camera);
+    toNdc(e, ndc);
+    ray.set(ndc.x, ndc.y, 0.5).unproject(camera);
     ray.sub(camera.position).normalize();
     return out.copy(camera.position).addScaledVector(ray, -camera.position.z / ray.z);
   };
   addEventListener("pointermove", (e) => {
     toWorld(e, pointer.world);
-    pointer.ndc.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
-    pointer.active = e.pointerType === "mouse";
+    toNdc(e, pointer.ndc);
+    pointer.active = e.pointerType === "mouse" && Math.abs(pointer.ndc.y) <= 1;
   });
-  addEventListener("pointerdown", (e) => {
+  hero.addEventListener("pointerdown", (e) => {
     toWorld(e, scatter.at);
     scatter.t = 1;
   });
@@ -330,16 +340,22 @@ function start() {
   }
 
   addEventListener("resize", resize);
+  new ResizeObserver(resize).observe(canvas);
   if (hint) hint.textContent = matchMedia("(hover: hover)").matches ? "click to scatter" : "tap to scatter";
 
   const clock = new THREE.Clock();
-  renderer.setAnimationLoop(() => {
+  const frame = () => {
     const dt = Math.min(clock.getDelta(), 1 / 30);
     step(dt);
     moveCamera(dt);
     sync();
     renderer.render(scene, camera);
-  });
+  };
+  // Only fly while the hero is on screen.
+  new IntersectionObserver(([e]) => {
+    clock.getDelta();
+    renderer.setAnimationLoop(e.isIntersecting ? frame : null);
+  }).observe(canvas);
   show();
 }
 
